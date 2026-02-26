@@ -1,0 +1,49 @@
+# FireRedASR2S REST API 配置文件模板
+# 使用方式：复制此文件为 config.yaml 并修改配置
+# 环境变量 FIRERED_* 可覆盖以下配置（如 FIRERED_SERVER_PORT=9000）
+
+# ========== 服务配置 ==========
+server:
+  host: "0.0.0.0"
+  port: 8000
+
+# ========== 模型配置 ==========
+models:
+  preload_on_start: false  # 启动时预加载模型，设为 true 可提升首请求响应速度
+
+  # ASR 语音识别模型
+  asr:
+    enabled: true
+    type: "aed"  # aed 或 llm
+    model_dir: "./pretrained_models/FireRedASR2-AED"
+    use_gpu: false
+    use_half: false
+    beam_size: 5
+
+  # VAD 语音活动检测模型
+  vad:
+    enabled: false
+    model_dir: "./pretrained_models/FireRedVAD/VAD"
+    stream_model_dir: "./pretrained_models/FireRedVAD/Stream-VAD"
+    aed_model_dir: "./pretrained_models/FireRedVAD/AED"
+    use_gpu: false
+    speech_threshold: 0.5
+
+  # LID 语种识别模型
+  lid:
+    enabled: false
+    model_dir: "./pretrained_models/FireRedLID"
+    use_gpu: false
+    use_half: false
+
+  # Punc 标点预测模型
+  punc:
+    enabled: false
+    model_dir: "./pretrained_models/FireRedPunc"
+    use_gpu: false
+
+# ========== 音频处理配置 ==========
+# 支持 FFmpeg 可解码的所有音频格式，非标准 WAV 将自动转码
+processing:
+  max_file_size: 52428800      # 最大文件大小（字节），默认 50MB
+  max_audio_duration: 60       # 最大音频时长（秒）

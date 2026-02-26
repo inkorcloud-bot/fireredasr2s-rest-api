@@ -3,13 +3,13 @@
 """
 
 import os
-import tempfile
 import time
 import uuid
 from fastapi import UploadFile
 from typing import Dict, Any
 from utils.logger import get_logger
-from utils.audio_validator import validate_audio_file, get_audio_duration
+from utils.audio_validator import prepare_audio_for_asr, get_audio_duration
+from utils.config_loader import get_config
 from utils.response_builder import success_response, error_response
 from utils.error_codes import ErrorCode
 
@@ -22,7 +22,7 @@ class RequestProcessor:
     def __init__(self, model_manager, config: dict):
         """初始化请求处理器"""
         self.model_manager = model_manager
-        self.config = config
+        self.config = config or get_config()
     
     async def transcribe(
         self,
@@ -48,17 +48,11 @@ class RequestProcessor:
         tmp_path = None
         
         try:
-            # 验证音频文件
-            audio_info = validate_audio_file(audio_file, self.config)
+            # 验证并准备音频（非 WAV 将自动转码为 16kHz 16-bit mono PCM WAV）
+            audio_info, tmp_path = prepare_audio_for_asr(audio_file, self.config)
             result['dur_s'] = audio_info['duration']
-            logger.info(f"音频验证成功: {audio_info['filename']}, 时长: {audio_info['duration']:.2f}s")
-            
-            # 保存临时文件
-            audio_file.file.seek(0)
-            content = audio_file.file.read()
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp:
-                tmp.write(content)
-                tmp_path = tmp.name
+            logger.info(f"音频准备成功: {audio_info['filename']}, 时长: {audio_info['duration']:.2f}s"
+                        f"{', 已转码' if audio_info.get('transcoded') else ''}")
             
             # ASR 识别
             asr_model = self.model_manager.get_model('asr')

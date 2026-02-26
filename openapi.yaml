@@ -1,0 +1,555 @@
+openapi: 3.1.0
+
+info:
+  title: FireRedASR2S REST API
+  description: |
+    工业级语音识别服务，基于 FastAPI 构建。提供高效的 ASR（自动语音识别）、
+    VAD（语音活动检测）、LID（语言识别）、标点恢复等功能，采用异步处理以提高性能。
+  version: 1.0.0
+  contact:
+    name: FireRedASR2S
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:8000
+    description: 本地开发服务器
+  - url: /
+    description: 相对路径（配合网关/代理使用）
+
+tags:
+  - name: health
+    description: 健康检查
+  - name: system
+    description: 一站式识别
+  - name: admin
+    description: 管理接口
+  - name: asr
+    description: 自动语音识别
+  - name: vad
+    description: 语音活动检测
+  - name: lid
+    description: 语言识别
+  - name: punc
+    description: 标点恢复
+
+paths:
+  /api/v1/health:
+    get:
+      tags: [health]
+      summary: 健康检查
+      description: 返回服务状态、版本、模型加载状态
+      operationId: healthCheck
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                code: 0
+                message: success
+                data:
+                  status: healthy
+                  version: "1.0.0"
+                  models_loaded: true
+                  models:
+                    asr: loaded
+                    vad: loaded
+                    lid: loaded
+                    punc: loaded
+
+  /api/v1/system/transcribe:
+    post:
+      tags: [system]
+      summary: 一站式语音识别
+      description: 支持 ASR、VAD、LID、标点预测的完整流程
+      operationId: systemTranscribe
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [audio]
+              properties:
+                audio:
+                  type: string
+                  format: binary
+                  description: 音频文件
+                uttid:
+                  type: string
+                  description: 话语ID
+                enable_vad:
+                  type: boolean
+                  default: true
+                  description: 启用VAD
+                enable_lid:
+                  type: boolean
+                  default: true
+                  description: 启用LID
+                enable_punc:
+                  type: boolean
+                  default: true
+                  description: 启用标点
+                asr_type:
+                  type: string
+                  default: aed
+                  description: ASR类型
+                return_timestamp:
+                  type: boolean
+                  default: false
+                  description: 返回时间戳
+      responses:
+        '200':
+          description: 识别成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranscribeSuccessResponse'
+        '500':
+          description: 服务器错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/admin/config:
+    get:
+      tags: [admin]
+      summary: 获取当前配置
+      description: 获取当前配置（隐藏敏感信息如密码、密钥等）
+      operationId: getAdminConfig
+      responses:
+        '200':
+          description: 配置获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '500':
+          description: 服务器错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/admin/status:
+    get:
+      tags: [admin]
+      summary: 获取服务状态
+      description: 获取服务状态和资源使用情况（CPU、内存等）
+      operationId: getAdminStatus
+      responses:
+        '200':
+          description: 状态查询成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                code: 0
+                message: 状态查询成功
+                data:
+                  service: running
+                  models:
+                    asr: loaded
+                    vad: loaded
+                    lid: loaded
+                    punc: loaded
+                  resources:
+                    cpu_percent: 12.5
+                    memory_percent: 45.2
+        '500':
+          description: 服务器错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/admin/reload:
+    post:
+      tags: [admin]
+      summary: 热重载模块
+      description: 热重载指定模块，不指定时重载所有模块（asr, vad, lid, punc）
+      operationId: reloadModels
+      parameters:
+        - name: modules
+          in: query
+          required: false
+          description: 要重载的模块列表
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [asr, vad, lid, punc]
+      responses:
+        '200':
+          description: 模块重载完成
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '500':
+          description: 服务器错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/modules/asr/transcribe:
+    post:
+      tags: [asr]
+      summary: ASR 批量转录
+      description: 支持同时处理多个音频文件进行语音识别
+      operationId: asrBatchTranscribe
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [audios]
+              properties:
+                audios:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: 多个音频文件
+                asr_type:
+                  type: string
+                  default: aed
+                  description: ASR类型
+                beam_size:
+                  type: integer
+                  default: 3
+                  description: beam size
+                return_timestamp:
+                  type: boolean
+                  default: false
+                  description: 返回时间戳
+      responses:
+        '200':
+          description: 批量转录完成
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ASRBatchSuccessResponse'
+        '500':
+          description: 服务器错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/modules/asr/info:
+    get:
+      tags: [asr]
+      summary: ASR 模块信息
+      description: 返回 ASR 模块的版本和状态信息
+      operationId: asrInfo
+      responses:
+        '200':
+          description: ASR 信息查询成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                code: 0
+                message: ASR信息查询成功
+                data:
+                  version: "1.0.0"
+                  loaded: true
+                  type: FireRedASR2S
+                  supported_formats: [3gp, 3g2, aac, ac3, flac, m4a, mp3, mp4, ogg, opus, wav, webm, ...]
+                  features: [batch_transcribe, timestamp, beam_search, auto_transcode]
+        '500':
+          description: 服务器错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/modules/vad/detect:
+    post:
+      tags: [vad]
+      summary: VAD 语音检测
+      description: 检测音频中的语音段落
+      operationId: vadDetect
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [audio_file]
+              properties:
+                audio_file:
+                  type: string
+                  format: binary
+                  description: 音频文件
+                speech_threshold:
+                  type: number
+                  format: float
+                  default: 0.4
+                  description: 语音检测阈值
+      responses:
+        '200':
+          description: 检测成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '500':
+          description: 服务器错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/modules/vad/aed:
+    post:
+      tags: [vad]
+      summary: AED 音频事件检测
+      description: 音频事件检测（Audio Event Detection）
+      operationId: vadAedDetect
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [audio_file]
+              properties:
+                audio_file:
+                  type: string
+                  format: binary
+                  description: 音频文件
+      responses:
+        '200':
+          description: 检测成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '500':
+          description: 服务器错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/modules/vad/stream:
+    get:
+      tags: [vad]
+      summary: VAD 流式检测 (WebSocket)
+      description: |
+        通过 WebSocket 实时进行语音活动检测。
+        连接地址：`ws://host:port/api/v1/modules/vad/stream`
+        客户端发送二进制音频数据，服务端返回 JSON `{"is_speech": boolean}`
+      operationId: vadStream
+      parameters: []
+      responses:
+        '101':
+          description: Switching Protocols - WebSocket 连接已建立
+      security: []
+
+  /api/v1/modules/lid/detect:
+    post:
+      tags: [lid]
+      summary: 语言识别
+      description: 识别音频中的语言类型
+      operationId: lidDetect
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [audio_file]
+              properties:
+                audio_file:
+                  type: string
+                  format: binary
+                  description: 音频文件
+      responses:
+        '200':
+          description: 检测成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                code: 0
+                message: success
+                data:
+                  uttid: "uuid-string"
+                  lang: zh
+                  confidence: 0.95
+                  dur_s: 2.5
+        '500':
+          description: 服务器错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/modules/punc/predict:
+    post:
+      tags: [punc]
+      summary: 标点预测
+      description: 为文本添加标点符号
+      operationId: puncPredict
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PuncRequest'
+      responses:
+        '200':
+          description: 预测成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                code: 0
+                message: success
+                data:
+                  results:
+                    - punc_text: "你好，世界！"
+                      origin_text: "你好世界"
+                      uttid: "uuid-string"
+        '500':
+          description: 服务器错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    SuccessResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: integer
+          description: 状态码，0 表示成功
+          example: 0
+        message:
+          type: string
+          description: 响应消息
+          example: success
+        data:
+          description: 响应数据，结构因接口而异
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: integer
+          description: 错误码
+          example: 5000
+        message:
+          type: string
+          description: 错误描述
+        details:
+          description: 错误详情
+
+    PuncRequest:
+      type: object
+      required: [texts]
+      properties:
+        texts:
+          type: array
+          items:
+            type: string
+          description: 待加标点的文本列表
+        uttids:
+          type: array
+          items:
+            type: string
+          description: 话语ID列表，与 texts 一一对应
+
+    TranscribeSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                uttid:
+                  type: string
+                  description: 话语ID
+                text:
+                  type: string
+                  description: 识别文本
+                dur_s:
+                  type: number
+                  description: 音频时长（秒）
+                sentences:
+                  type: array
+                  items: {}
+                  description: 分句结果
+                vad_segments_ms:
+                  type: array
+                  items: {}
+                  description: VAD 分段（毫秒）
+                words:
+                  type: array
+                  items: {}
+                  description: 词级时间戳（return_timestamp 为 true 时返回）
+                processing_time_ms:
+                  type: integer
+                  description: 处理耗时（毫秒）
+
+    ASRBatchSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                results:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      uttid:
+                        type: string
+                      text:
+                        type: string
+                      processing_time_ms:
+                        type: integer
+                      audio_info:
+                        type: object
+                        description: 音频元信息
+                      error:
+                        type: string
+                        description: 错误信息（失败时）
+                total_processing_time_ms:
+                  type: integer
+                  description: 总处理耗时（毫秒）
+
+  securitySchemes: {}
+
+  # 错误码参考（来自 utils/error_codes.py）
+  x-error-codes:
+    "0": "成功"
+    "4000": "无效的请求参数"
+    "4001": "不支持的音频格式"
+    "4002": "音频文件过大"
+    "4003": "音频时长超过限制"
+    "4004": "音频转码失败"
+    "4010": "模型未加载"
+    "5000": "内部服务器错误"
+    "5001": "模型推理错误"
+    "5002": "GPU内存不足"

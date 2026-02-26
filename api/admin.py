@@ -1,9 +1,10 @@
 """管理接口路由 - 配置、状态、重载"""
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends
 import psutil
 from typing import Optional, List
 from core.model_manager import ModelManager
+from api.deps import get_model_manager
 from utils.config_loader import get_config
 from utils.response_builder import success_response, error_response
 
@@ -22,12 +23,13 @@ async def get_admin_config():
 
 
 @router.get("/status")
-async def get_status():
+async def get_status(manager: Optional[ModelManager] = Depends(get_model_manager)):
     """获取服务状态和资源使用情况"""
     try:
+        models_status = manager.get_status() if manager else {"asr": "unloaded", "vad": "unloaded", "lid": "unloaded", "punc": "unloaded"}
         status = {
             "service": "running",
-            "models": ModelManager().get_status(),
+            "models": models_status,
             "resources": {
                 "cpu_percent": psutil.cpu_percent(),
                 "memory_percent": psutil.virtual_memory().percent
@@ -39,11 +41,13 @@ async def get_status():
 
 
 @router.post("/reload")
-async def reload_models(modules: Optional[List[str]] = None):
+async def reload_models(modules: Optional[List[str]] = None, manager: Optional[ModelManager] = Depends(get_model_manager)):
     """热重载指定模块"""
     try:
+        if not manager:
+            return error_response(500, "服务未就绪，模型管理器未初始化")
         modules = modules or ["asr", "vad", "lid", "punc"]
-        result = ModelManager().reload_modules(modules)
+        result = manager.reload_modules(modules)
         return success_response(result, "模块重载完成")
     except Exception as e:
         return error_response(500, str(e))

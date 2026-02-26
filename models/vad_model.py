@@ -48,7 +48,7 @@ class VADModel:
         # 创建 VAD 配置
         vad_config = FireRedVadConfig(
             use_gpu=self.use_gpu,
-            threshold=self.speech_threshold
+            speech_threshold=self.speech_threshold
         )
         
         # 创建 AED 配置

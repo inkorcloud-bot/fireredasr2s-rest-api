@@ -1,15 +1,16 @@
 """系统一站式识别路由"""
 
-from fastapi import APIRouter, UploadFile, File, Form
-from typing import Dict, Any
+from fastapi import APIRouter, UploadFile, File, Form, Depends
+from typing import Dict, Any, Optional
 from core.model_manager import ModelManager
 from core.processor import RequestProcessor
+from api.deps import get_model_manager
 from utils.response_builder import success_response, error_response
 
 router = APIRouter(tags=["system"])
 
 
-@router.post("/api/v1/system/transcribe")
+@router.post("/system/transcribe")
 async def system_transcribe(
     audio: UploadFile = File(..., description="音频文件"),
     uttid: str = Form(None, description="话语ID"),
@@ -17,14 +18,16 @@ async def system_transcribe(
     enable_lid: bool = Form(True, description="启用LID"),
     enable_punc: bool = Form(True, description="启用标点"),
     asr_type: str = Form("aed", description="ASR类型"),
-    return_timestamp: bool = Form(False, description="返回时间戳")
+    return_timestamp: bool = Form(False, description="返回时间戳"),
+    manager: Optional[ModelManager] = Depends(get_model_manager)
 ) -> Dict[str, Any]:
     """
     一站式语音识别接口
     支持ASR、VAD、LID、标点预测的完整流程
     """
     try:
-        manager = ModelManager()
+        if not manager:
+            return error_response(500, "服务未就绪，模型管理器未初始化")
         processor = RequestProcessor(manager, {})
         
         result = await processor.transcribe(

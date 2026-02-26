@@ -15,6 +15,7 @@ FireRedASR2S REST API 是一个基于 FastAPI 构建的语音识别 REST 服务�
 - **系统监控**：提供资源使用情况查询
 - **健康检查**：内置健康检查端点
 - **配置管理**：支持 YAML 和 ENV 配置
+- **多格式音频**：支持 wav/mp3/flac/ogg/m4a，非 WAV 自动转码为 16kHz 16-bit mono PCM
 
 ## 安装部署说明
 
@@ -22,6 +23,7 @@ FireRedASR2S REST API 是一个基于 FastAPI 构建的语音识别 REST 服务�
 
 - Python 3.10+
 - CUDA 11.8+ (如果使用 GPU)
+- FFmpeg（用于 mp3/flac 等格式转码）：`apt install ffmpeg`
 
 ### 快速启动
 

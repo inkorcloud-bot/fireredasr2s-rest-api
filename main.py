@@ -51,6 +51,7 @@ async def startup_event():
     logger.info("Configuration loaded")
     model_manager = ModelManager(config.get("models", {}))
     await model_manager.initialize()
+    app.state.model_manager = model_manager
     logger.info("FireRedASR2S REST API started successfully")
 
 @app.on_event("shutdown")

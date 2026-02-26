@@ -46,7 +46,9 @@ class ModelManager:
                 model_class = self._model_classes.get(name)
                 if model_class and not self._loaded[name]:
                     try:
-                        self._models[name] = model_class(self.config.get(name, {}))
+                        model_instance = model_class(self.config.get(name, {}))
+                        model_instance.load()
+                        self._models[name] = model_instance
                         self._loaded[name] = True
                         logger.info(f"{name} 模型加载成功")
                     except Exception as e:
@@ -66,7 +68,9 @@ class ModelManager:
             model_class = self._model_classes.get(name)
             if model_class and not self._loaded[name]:
                 try:
-                    self._models[name] = model_class(self.config.get(name, {}))
+                    model_instance = model_class(self.config.get(name, {}))
+                    model_instance.load()
+                    self._models[name] = model_instance
                     self._loaded[name] = True
                     result['success'].append(name)
                     logger.info(f"{name} 模型热重载成功")

@@ -4,6 +4,7 @@
 
 - Python 3.10+
 - CUDA 11.8+ (如果使用 GPU)
+- **FFmpeg**（用于非 WAV 音频转码，如 mp3/flac 等）：`sudo apt install ffmpeg` (Ubuntu/Debian)
 
 ## 安装步骤
 
@@ -71,7 +72,6 @@ pretrained_models/
 
 ```yaml
 models:
-  base_dir: "./pretrained_models"
   preload_on_start: true
 
   asr:

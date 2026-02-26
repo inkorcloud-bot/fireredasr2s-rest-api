@@ -1,9 +1,9 @@
 # M28: Dockerfile
 FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
 
-# 安装 Python 3.10 和 pip
+# 安装 Python 3.10、pip 和 ffmpeg（用于 mp3/flac 等音频转码）
 RUN apt-get update && \
-    apt-get install -y python3.10 python3-pip && \
+    apt-get install -y python3.10 python3-pip ffmpeg && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

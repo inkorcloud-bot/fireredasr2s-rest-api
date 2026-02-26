@@ -1,0 +1,60 @@
+"""ASR模块路由 - 批量转录和信息查询"""
+
+from fastapi import APIRouter, UploadFile, File, Form
+from typing import Dict, Any
+from ..core.model_manager import ModelManager
+from ..core.asr_processor import ASRProcessor
+from ..utils.response_builder import success_response, error_response
+
+router = APIRouter(tags=["ASR"])
+VERSION = "1.0.0"
+
+
+@router.post("/api/v1/modules/asr/transcribe")
+async def asr_batch_transcribe(
+    audios: list[UploadFile] = File(..., description="多个音频文件"),
+    asr_type: str = Form("aed", description="ASR类型"),
+    beam_size: int = Form(3, description="beam size"),
+    return_timestamp: bool = Form(False, description="返回时间戳")
+) -> Dict[str, Any]:
+    """
+    ASR批量转录接口
+    支持同时处理多个音频文件
+    """
+    try:
+        manager = ModelManager()
+        processor = ASRProcessor(manager, {})
+        
+        result = await processor.batch_transcribe(
+            audio_files=audios,
+            asr_type=asr_type,
+            beam_size=beam_size,
+            return_timestamp=return_timestamp
+        )
+        
+        return success_response(result, "批量转录完成")
+    except Exception as e:
+        return error_response(500, str(e))
+
+
+@router.get("/api/v1/modules/asr/info")
+async def asr_info() -> Dict[str, Any]:
+    """
+    ASR模块信息接口
+    返回ASR模块的版本和状态信息
+    """
+    try:
+        manager = ModelManager()
+        model = manager.get_model('asr')
+        
+        info = {
+            "version": VERSION,
+            "loaded": model is not None,
+            "type": "FireRedASR2S",
+            "supported_formats": ["wav", "pcm"],
+            "features": ["batch_transcribe", "timestamp", "beam_search"]
+        }
+        
+        return success_response(info, "ASR信息查询成功")
+    except Exception as e:
+        return error_response(500, str(e))

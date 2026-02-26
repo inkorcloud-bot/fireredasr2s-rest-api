@@ -1,0 +1,206 @@
+# FireRedASR2S REST API
+
+## 项目简介
+
+FireRedASR2S REST API 是一个基于 FastAPI 构建的语音识别 REST 服务，提供高效的 ASR（自动语音识别）功能。该服务支持 VAD（语音活动检测）、LID（语言识别）、标点恢复等功能，并采用异步处理以提高性能。
+
+## 功能特性
+
+- **ASR（自动语音识别）**：支持实时语音转文字
+- **VAD（语音活动检测）**：智能检测语音段落
+- **LID（语言识别）**：识别语音的语言类型
+- **标点恢复**：为识别结果添加标点符号
+- **异步处理**：基于 FastAPI 的异步架构
+- **GPU 加速**：支持 NVIDIA CUDA 加速
+- **系统监控**：提供资源使用情况查询
+- **健康检查**：内置健康检查端点
+- **配置管理**：支持 YAML 和 ENV 配置
+
+## 安装部署说明
+
+### 环境要求
+
+- Docker 20.10+
+- Docker Compose 2.0+
+- NVIDIA Driver（支持 CUDA 11.8）
+- NVIDIA Container Toolkit
+
+### 快速启动
+
+1. **克隆项目**
+   ```bash
+   git clone <repository-url>
+   cd fireredasr2s-rest-api
+   ```
+
+2. **配置环境**
+   ```bash
+   cp .env.example .env
+   # 编辑 .env 文件配置必要参数
+   ```
+
+3. **下载模型**
+   ```bash
+   # 将模型文件放置到 models/ 目录
+   ```
+
+4. **启动服务**
+   ```bash
+   docker-compose up -d
+   ```
+
+5. **查看日志**
+   ```bash
+   docker-compose logs -f
+   ```
+
+### 停止服务
+
+```bash
+docker-compose down
+```
+
+## 配置说明
+
+### 环境变量（.env）
+
+| 变量名 | 说明 | 示例 |
+|--------|------|------|
+| HOST | 服务监听地址 | 0.0.0.0 |
+| PORT | 服务监听端口 | 8000 |
+| MODEL_PATH | 模型文件路径 | /app/models |
+| MAX_AUDIO_SIZE | 最大音频文件大小（MB） | 50 |
+| WORKER_THREADS | 工作线程数 | 4 |
+
+### 配置文件（config.yaml）
+
+```yaml
+model:
+  asr:
+    path: "/app/models/asr_model.bin"
+  vad:
+    path: "/app/models/vad_model.bin"
+  lid:
+    path: "/app/models/lid_model.bin"
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+```
+
+## API 使用示例
+
+### 健康检查
+
+```bash
+curl http://localhost:8000/health
+```
+
+### ASR 识别
+
+```bash
+curl -X POST http://localhost:8000/api/v1/asr/transcribe \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@audio.wav" \
+  -F "language=zh"
+```
+
+### WebSocket 实时识别
+
+```javascript
+const ws = new WebSocket('ws://localhost:8000/api/v1/asr/stream');
+
+ws.onopen = () => {
+  console.log('Connected');
+};
+
+ws.onmessage = (event) => {
+  console.log('Result:', event.data);
+};
+
+// 发送音频数据
+ws.send(audioData);
+```
+
+### 系统状态查询
+
+```bash
+curl http://localhost:8000/api/v1/system/status
+```
+
+### 管理接口
+
+```bash
+# 重载配置
+curl -X POST http://localhost:8000/api/v1/admin/reload-config
+
+# 清理缓存
+curl -X POST http://localhost:8000/api/v1/admin/clear-cache
+```
+
+## 开发指南
+
+### 本地开发
+
+1. **安装依赖**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **启动开发服务器**
+   ```bash
+   uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+   ```
+
+3. **运行测试**
+   ```bash
+   pytest tests/
+   ```
+
+### 项目结构
+
+```
+fireredasr2s-rest-api/
+├── api/                    # API 路由
+│   ├── modules/           # 功能模块
+│   │   ├── asr.py         # ASR 识别
+│   │   ├── vad.py         # 语音检测
+│   │   ├── lid.py         # 语言识别
+│   │   └── punc.py        # 标点恢复
+│   ├── admin.py           # 管理接口
+│   ├── health.py          # 健康检查
+│   └── system.py          # 系统状态
+├── core/                   # 核心逻辑
+├── models/                 # 模型文件
+├── schemas/               # 数据验证
+├── utils/                 # 工具函数
+├── config.yaml            # 配置文件
+├── Dockerfile             # Docker 构建文件
+├── docker-compose.yml     # Docker Compose 配置
+└── requirements.txt       # Python 依赖
+```
+
+### 代码规范
+
+- 使用 Black 格式化代码
+- 使用 Pylint 进行代码检查
+- 遵循 PEP 8 规范
+- 编写单元测试
+
+### 贡献指南
+
+1. Fork 项目
+2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 开启 Pull Request
+
+## 许可证
+
+MIT License
+
+## 联系方式
+
+- 项目地址：[GitHub Repository]
+- 问题反馈：[Issues]

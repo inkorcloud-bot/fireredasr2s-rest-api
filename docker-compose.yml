@@ -1,0 +1,23 @@
+# M29: Docker Compose 配置
+version: '3.8'
+
+services:
+  fireredasr2s-api:
+    build: .
+    container_name: fireredasr2s-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models:/app/models
+      - ./config.yaml:/app/config.yaml
+      - ./.env:/app/.env
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+    environment:
+      - CUDA_VISIBLE_DEVICES=0

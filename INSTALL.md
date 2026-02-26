@@ -1,0 +1,122 @@
+# FireRedASR2S REST API 安装指南
+
+## 环境要求
+
+- Python 3.10+
+- CUDA 11.8+ (如果使用 GPU)
+
+## 安装步骤
+
+### 1. 克隆或下载项目
+
+```bash
+git clone <repository-url>
+cd fireredasr2s-rest-api
+```
+
+### 2. 安装 PyTorch（重要！）
+
+PyTorch 需要根据你的环境手动安装，因为 CPU 和 GPU 版本不同。
+
+#### CPU 版本（无 GPU）
+
+```bash
+pip install torch>=2.1.0 torchaudio>=2.1.0 --index-url https://download.pytorch.org/whl/cpu
+```
+
+#### GPU 版本（CUDA 11.8）
+
+```bash
+pip install torch>=2.1.0 torchaudio>=2.1.0
+```
+
+#### GPU 版本（CUDA 12.1）
+
+```bash
+pip install torch>=2.1.0 torchaudio>=2.1.0
+```
+
+#### 其他版本
+
+访问 [PyTorch 官网](https://pytorch.org/get-started/locally/) 获取适合你系统的安装命令。
+
+### 3. 安装其他依赖
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. 准备模型文件
+
+将 FireRedASR2S 的模型文件下载到对应的目录：
+
+```
+pretrained_models/
+├── FireRedASR2-AED/          # ASR 模型（AED）
+├── FireRedASR2-LLM/          # ASR 模型（LLM，可选）
+├── FireRedVAD/
+│   ├── VAD/                  # VAD 模型
+│   ├── Stream-VAD/           # 流式 VAD 模型
+│   └── AED/                  # AED 模型
+├── FireRedLID/               # 语种识别模型
+└── FireRedPunc/              # 标点预测模型
+```
+
+### 5. 配置模型路径
+
+编辑 `config.yaml`，根据实际模型路径修改配置：
+
+```yaml
+models:
+  base_dir: "./pretrained_models"
+  preload_on_start: true
+
+  asr:
+    enabled: true
+    type: "aed"  # aed 或 llm
+    model_dir: "./pretrained_models/FireRedASR2-AED"
+    use_gpu: false  # 设置为 true 如果有 GPU
+    use_half: false
+    beam_size: 3
+
+  # ... 其他配置
+```
+
+### 6. 启动服务
+
+```bash
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+## 验证安装
+
+访问健康检查端点：
+
+```bash
+curl http://localhost:8000/api/v1/health
+```
+
+## 常见问题
+
+### ImportError: No module named 'torch'
+
+**原因**：PyTorch 未安装
+
+**解决**：按照步骤 2 安装 PyTorch
+
+### CUDA out of memory
+
+**原因**：GPU 内存不足
+
+**解决**：
+- 减少批处理大小
+- 在 config.yaml 中设置 `use_half: true` 使用半精度
+- 切换到 CPU 模式（性能会降低）
+
+### 模型文件未找到
+
+**原因**：模型路径配置错误或模型文件未下载
+
+**解决**：
+- 检查 config.yaml 中的 model_dir 路径
+- 确保模型文件已正确下载到对应目录

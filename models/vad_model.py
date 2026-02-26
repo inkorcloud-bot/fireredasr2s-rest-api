@@ -6,6 +6,14 @@ import time
 from typing import Dict, Any, List
 from ..utils.logger import get_logger
 
+# 导入 FireRedVAD 和 FireRedAed 相关模块
+try:
+    from fireredasr2s.fireredvad import FireRedVad, FireRedVadConfig
+    from fireredasr2s.fireredvad import FireRedAed, FireRedAedConfig
+    FIRERED_AVAILABLE = True
+except ImportError:
+    FIRERED_AVAILABLE = False
+
 logger = get_logger(__name__)
 
 
@@ -16,9 +24,13 @@ class VADModel:
         """初始化 VAD 模型"""
         self.config = config
         self.model_dir = config.get('model_dir', '')
+        self.stream_model_dir = config.get('stream_model_dir', '')
+        self.aed_model_dir = config.get('aed_model_dir', '')
         self.use_gpu = config.get('use_gpu', False)
         self.speech_threshold = config.get('speech_threshold', 0.5)
         self._loaded = False
+        self._vad_model = None
+        self._aed_model = None
         logger.info(f"VAD模型初始化: threshold={self.speech_threshold}")
     
     def load(self) -> None:
@@ -26,8 +38,30 @@ class VADModel:
         if self._loaded:
             logger.warning("VAD模型已加载，跳过")
             return
+        
+        if not FIRERED_AVAILABLE:
+            logger.error("FireRedASR2S 库不可用，无法加载真实模型")
+            raise RuntimeError("FireRedASR2S 库不可用")
+        
         logger.info("正在加载VAD模型...")
-        time.sleep(0.3)  # 模拟加载延迟
+        
+        # 创建 VAD 配置
+        vad_config = FireRedVadConfig(
+            use_gpu=self.use_gpu,
+            threshold=self.speech_threshold
+        )
+        
+        # 创建 AED 配置
+        aed_config = FireRedAedConfig(
+            use_gpu=self.use_gpu
+        )
+        
+        # 加载 VAD 模型
+        self._vad_model = FireRedVad.from_pretrained(self.model_dir, vad_config)
+        
+        # 加载 AED 模型
+        self._aed_model = FireRedAed.from_pretrained(self.aed_model_dir, aed_config)
+        
         self._loaded = True
         logger.info("VAD模型加载完成")
     
@@ -37,12 +71,12 @@ class VADModel:
             raise RuntimeError("VAD模型未加载")
         
         logger.info(f"VAD检测: {audio_path}")
-        time.sleep(0.4)  # 模拟检测延迟
         
-        # 模拟返回结果
+        result, _ = self._vad_model.detect(audio_path)
+        
         return {
-            'duration': 4.2,
-            'timestamps': [[0.0, 1.5], [2.0, 4.0]]
+            'dur': result.get('dur', 0.0),
+            'timestamps': result.get('timestamps', [])
         }
     
     def aed_detect(self, audio_path: str) -> Dict[str, Any]:
@@ -51,13 +85,13 @@ class VADModel:
             raise RuntimeError("VAD模型未加载")
         
         logger.info(f"AED检测: {audio_path}")
-        time.sleep(0.5)  # 模拟检测延迟
         
-        # 模拟返回结果
+        result, _ = self._aed_model.detect(audio_path)
+        
         return {
-            'duration': 4.2,
-            'event2timestamps': {'speech': [[0.0, 1.5], [2.0, 4.0]], 'music': []},
-            'event2ratio': {'speech': 0.95, 'music': 0.0}
+            'dur': result.get('dur', 0.0),
+            'event2timestamps': result.get('event2timestamps', {}),
+            'event2ratio': result.get('event2ratio', {})
         }
     
     def unload(self) -> None:

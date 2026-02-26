@@ -20,12 +20,12 @@ FireRedASR2S REST API 是一个基于 FastAPI 构建的语音识别 REST 服务�
 
 ### 环境要求
 
-- Docker 20.10+
-- Docker Compose 2.0+
-- NVIDIA Driver（支持 CUDA 11.8）
-- NVIDIA Container Toolkit
+- Python 3.10+
+- CUDA 11.8+ (如果使用 GPU)
 
 ### 快速启动
+
+**⚠️ 重要：详细的安装步骤请参考 [INSTALL.md](INSTALL.md)**
 
 1. **克隆项目**
    ```bash
@@ -33,29 +33,54 @@ FireRedASR2S REST API 是一个基于 FastAPI 构建的语音识别 REST 服务�
    cd fireredasr2s-rest-api
    ```
 
-2. **配置环境**
+2. **安装 PyTorch（根据环境手动安装）**
+
+   CPU 版本：
    ```bash
-   cp .env.example .env
-   # 编辑 .env 文件配置必要参数
+   pip install torch>=2.1.0 torchaudio>=2.1.0 --index-url https://download.pytorch.org/whl/cpu
    ```
 
-3. **下载模型**
+   GPU 版本（CUDA 11.8）：
    ```bash
-   # 将模型文件放置到 models/ 目录
+   pip install torch>=2.1.0 torchaudio>=2.1.0
    ```
 
-4. **启动服务**
+3. **安装其他依赖**
    ```bash
-   docker-compose up -d
+   pip install -r requirements.txt
    ```
 
-5. **查看日志**
+4. **下载模型**
    ```bash
-   docker-compose logs -f
+   # 将模型文件放置到 pretrained_models/ 目录
+   # 详见 INSTALL.md
    ```
 
-### 停止服务
+5. **配置模型路径**
+   ```bash
+   # 编辑 config.yaml，设置正确的模型路径
+   ```
 
+6. **启动服务**
+   ```bash
+   uvicorn main:app --host 0.0.0.0 --port 8000
+   ```
+
+### Docker 部署（可选）
+
+如果使用 Docker 部署：
+
+- Docker 20.10+
+- Docker Compose 2.0+
+- NVIDIA Driver（支持 CUDA 11.8）
+- NVIDIA Container Toolkit
+
+```bash
+docker-compose up -d
+docker-compose logs -f
+```
+
+停止服务：
 ```bash
 docker-compose down
 ```
@@ -143,17 +168,29 @@ curl -X POST http://localhost:8000/api/v1/admin/clear-cache
 
 ### 本地开发
 
-1. **安装依赖**
+1. **安装 PyTorch（根据环境）**
+
+   CPU 版本：
+   ```bash
+   pip install torch>=2.1.0 torchaudio>=2.1.0 --index-url https://download.pytorch.org/whl/cpu
+   ```
+
+   GPU 版本：
+   ```bash
+   pip install torch>=2.1.0 torchaudio>=2.1.0
+   ```
+
+2. **安装其他依赖**
    ```bash
    pip install -r requirements.txt
    ```
 
-2. **启动开发服务器**
+3. **启动开发服务器**
    ```bash
-   uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+   uvicorn main:app --reload --host 0.0.0.0 --port 8000
    ```
 
-3. **运行测试**
+4. **运行测试**
    ```bash
    pytest tests/
    ```

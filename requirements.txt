@@ -19,3 +19,13 @@ python-json-logger>=2.0.0
 
 # System Monitoring
 psutil>=5.9.0
+
+# FireRedASR2S 相关依赖
+# 注意：PyTorch 需要手动根据环境安装，见安装指南
+transformers>=4.51.3
+numpy>=1.26.1
+cn2an>=0.5.23
+kaldiio>=2.18.0
+kaldi_native_fbank>=1.15
+sentencepiece>=0.1.99
+soundfile>=0.12.1

@@ -21,13 +21,35 @@ FireRedASR2S REST API 是一个基于 FastAPI 构建的语音识别 REST 服务�
 
 ### 环境要求
 
-- Python 3.10+
-- CUDA 11.8+ (如果使用 GPU)
+- Python 3.10
+- PyTorch 2.1.0 + torchaudio 2.1.0 (CUDA 11.8)
 - FFmpeg（用于 mp3/flac 等格式转码）：`apt install ffmpeg`
+- Conda（推荐使用 Miniconda 或 Anaconda）
 
 ### 快速启动
 
 **⚠️ 重要：详细的安装步骤请参考 [INSTALL.md](INSTALL.md)**
+
+#### 方式一：使用 Conda（推荐）
+
+1. **克隆项目并初始化子模块**
+   ```bash
+   git clone <repository-url>
+   cd fireredasr2s-rest-api
+   git submodule update --init --recursive  # 初始化 FireRedASR2S 子模块
+   ```
+
+2. **创建并激活 Conda 环境**
+   ```bash
+   conda env create -f environment.yml
+   conda activate fireredasr2s
+   ```
+
+3. **继续配置模型文件...**（详见 INSTALL.md）
+
+---
+
+#### 方式二：使用 pip
 
 1. **克隆项目并初始化子模块**
    ```bash
@@ -40,12 +62,12 @@ FireRedASR2S REST API 是一个基于 FastAPI 构建的语音识别 REST 服务�
 
    CPU 版本：
    ```bash
-   pip install torch>=2.1.0 torchaudio>=2.1.0 --index-url https://download.pytorch.org/whl/cpu
+   pip install torch==2.1.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cpu
    ```
 
    GPU 版本（CUDA 11.8）：
    ```bash
-   pip install torch>=2.1.0 torchaudio>=2.1.0
+   pip install torch==2.1.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu118
    ```
 
 3. **安装其他依赖**
@@ -195,16 +217,33 @@ curl -X POST http://localhost:8000/api/v1/admin/clear-cache
 
 ### 本地开发
 
+#### 使用 Conda（推荐）
+
+1. **创建并激活环境**
+   ```bash
+   conda env create -f environment.yml
+   conda activate fireredasr2s
+   ```
+
+2. **启动开发服务器**
+   ```bash
+   uvicorn main:app --reload --host 0.0.0.0 --port 8000
+   ```
+
+---
+
+#### 使用 pip
+
 1. **安装 PyTorch（根据环境）**
 
    CPU 版本：
    ```bash
-   pip install torch>=2.1.0 torchaudio>=2.1.0 --index-url https://download.pytorch.org/whl/cpu
+   pip install torch==2.1.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cpu
    ```
 
-   GPU 版本：
+   GPU 版本（CUDA 11.8）：
    ```bash
-   pip install torch>=2.1.0 torchaudio>=2.1.0
+   pip install torch==2.1.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu118
    ```
 
 2. **安装其他依赖**
@@ -241,6 +280,7 @@ fireredasr2s-rest-api/
 ├── schemas/               # 数据验证
 ├── utils/                 # 工具函数
 ├── config.yaml            # 配置文件
+├── environment.yml        # Conda 环境配置
 ├── Dockerfile             # Docker 构建文件
 ├── docker-compose.yml     # Docker Compose 配置
 └── requirements.txt       # Python 依赖

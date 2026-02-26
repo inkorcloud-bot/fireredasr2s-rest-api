@@ -5,10 +5,13 @@
 - Python 3.10+
 - CUDA 11.8+ (如果使用 GPU)
 - **FFmpeg**（用于非 WAV 音频转码，如 mp3/flac 等）：`sudo apt install ffmpeg` (Ubuntu/Debian)
+- **Conda**（推荐使用 Miniconda 或 Anaconda）
 
 ## 安装步骤
 
-### 1. 克隆项目并初始化子模块
+### 方式一：使用 Conda（推荐）
+
+#### 1. 克隆项目并初始化子模块
 
 ```bash
 git clone <repository-url>
@@ -18,33 +21,59 @@ cd fireredasr2s-rest-api
 git submodule update --init --recursive
 ```
 
-### 2. 安装 PyTorch（重要！）
+#### 2. 创建并激活 Conda 环境
+
+```bash
+# 使用 environment.yml 创建环境（包含 Python 3.10、PyTorch 2.1.0 CUDA 11.8 及所有依赖）
+conda env create -f environment.yml
+
+# 激活环境
+conda activate fireredasr2s
+```
+
+#### 3. 继续步骤 4 准备模型文件...
+
+---
+
+### 方式二：使用 pip
+
+#### 1. 克隆项目并初始化子模块
+
+```bash
+git clone <repository-url>
+cd fireredasr2s-rest-api
+
+# 初始化 FireRedASR2S 子模块（必需）
+git submodule update --init --recursive
+```
+
+#### 2. 安装 PyTorch（重要！）
 
 PyTorch 需要根据你的环境手动安装，因为 CPU 和 GPU 版本不同。
 
-#### CPU 版本（无 GPU）
+##### CPU 版本（无 GPU）
 
 ```bash
-pip install torch>=2.1.0 torchaudio>=2.1.0 --index-url https://download.pytorch.org/whl/cpu
+pip install torch==2.1.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cpu
 ```
 
-#### GPU 版本（CUDA 11.8）
+##### GPU 版本（CUDA 11.8）
 
 ```bash
-pip install torch>=2.1.0 torchaudio>=2.1.0
+pip install torch==2.1.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu118
 ```
 
-#### GPU 版本（CUDA 12.1）
+##### GPU 版本（CUDA 12.1）
 
 ```bash
-pip install torch>=2.1.0 torchaudio>=2.1.0
+pip install torch==2.1.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu121
 ```
 
-#### 其他版本
+##### 其他版本
 
 访问 [PyTorch 官网](https://pytorch.org/get-started/locally/) 获取适合你系统的安装命令。
 
-### 3. 安装其他依赖
+#### 3. 安装其他依赖
 
 ```bash
 pip install -r requirements.txt

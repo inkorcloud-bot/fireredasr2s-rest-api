@@ -62,9 +62,31 @@ FireRedASR2S REST API 是一个基于 FastAPI 构建的语音识别 REST 服务�
    ```
 
 6. **启动服务**
-   ```bash
-   uvicorn main:app --host 0.0.0.0 --port 8000
-   ```
+
+### 配置优先级
+- **命令行参数**（最高优先级）：`--host=0.0.0.0 --port=8000`
+- **config.yaml**（次优先级）：server.host 和 server.port
+- **硬编码默认值**（最低优先级）：host=0.0.0.0, port=8000
+
+### 默认启动（使用 config.yaml 配置）
+```bash
+python main.py
+```
+
+### 指定端口（命令行参数优先）
+```bash
+python main.py --port=9000
+```
+
+### 指定 host 和 port
+```bash
+python main.py --host=127.0.0.1 --port=9000
+```
+
+### 使用 uvicorn 直接启动
+```bash
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
 
 ### Docker 部署（可选）
 

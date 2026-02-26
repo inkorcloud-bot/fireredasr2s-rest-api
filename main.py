@@ -72,4 +72,28 @@ app.include_router(lid_router, prefix="/api/v1/modules", tags=["lid"])
 app.include_router(punc_router, prefix="/api/v1/modules", tags=["punc"])
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import argparse
+
+    # 硬编码默认值（最低优先级）
+    DEFAULT_HOST = "0.0.0.0"
+    DEFAULT_PORT = 8000
+
+    # 从 config.yaml 读取配置（次优先级）
+    config_from_yaml = load_config("config.yaml")
+    server_config = config_from_yaml.get('server', {})
+    host = server_config.get('host', DEFAULT_HOST)
+    port = server_config.get('port', DEFAULT_PORT)
+
+    # 解析命令行参数（最高优先级）
+    parser = argparse.ArgumentParser(description="FireRedASR2S REST API Server")
+    parser.add_argument("--host", type=str, default=host, 
+                        help=f"Host to bind to (default: {host} from config.yaml)")
+    parser.add_argument("--port", type=int, default=port, 
+                        help=f"Port to bind to (default: {port} from config.yaml)")
+    args = parser.parse_args()
+
+    # 命令行参数优先级最高
+    host = args.host
+    port = args.port
+
+    uvicorn.run(app, host=host, port=port)

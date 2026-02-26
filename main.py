@@ -17,7 +17,7 @@ from api.modules.punc import router as punc_router
 
 # 导入核心模块
 from core.model_manager import ModelManager
-from core.config_loader import load_config
+from utils.config_loader import load_config
 from utils.logger import setup_logger
 
 # 创建应用

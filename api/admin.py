@@ -3,9 +3,9 @@
 from fastapi import APIRouter, HTTPException
 import psutil
 from typing import Optional, List
-from ..core.model_manager import ModelManager
-from ..utils.config_loader import get_config
-from ..utils.response_builder import success_response, error_response
+from core.model_manager import ModelManager
+from utils.config_loader import get_config
+from utils.response_builder import success_response, error_response
 
 router = APIRouter(tags=["admin"])
 

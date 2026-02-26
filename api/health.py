@@ -2,8 +2,8 @@
 
 from fastapi import APIRouter
 from typing import Dict
-from ..core.model_manager import ModelManager
-from ..utils.response_builder import success_response
+from core.model_manager import ModelManager
+from utils.response_builder import success_response
 
 router = APIRouter(tags=["health"])
 VERSION = "1.0.0"

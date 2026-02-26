@@ -4,9 +4,9 @@ import os
 import tempfile
 from fastapi import UploadFile
 from typing import Dict, Any
-from ..utils.logger import get_logger
-from ..utils.audio_validator import validate_audio_file
-from ..utils.response_builder import error_response
+from utils.logger import get_logger
+from utils.audio_validator import validate_audio_file
+from utils.response_builder import error_response
 
 logger = get_logger(__name__)
 

@@ -1,8 +1,8 @@
 """VAD 模块路由"""
 
 from fastapi import APIRouter, UploadFile, File, WebSocket, WebSocketDisconnect
-from ...core.vad_processor import VADProcessor
-from ...utils.response_builder import success_response, error_response
+from core.vad_processor import VADProcessor
+from utils.response_builder import success_response, error_response
 
 router = APIRouter(prefix="/api/v1/modules/vad", tags=["VAD"])
 

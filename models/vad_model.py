@@ -4,7 +4,7 @@ VAD 模型封装类
 
 import time
 from typing import Dict, Any, List
-from ..utils.logger import get_logger
+from utils.logger import get_logger
 
 # 导入 FireRedVAD 和 FireRedAed 相关模块
 try:

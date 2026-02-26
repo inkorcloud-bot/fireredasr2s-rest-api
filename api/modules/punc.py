@@ -3,8 +3,8 @@
 from fastapi import APIRouter
 from typing import List
 from pydantic import BaseModel
-from ...core.punc_processor import PuncProcessor
-from ...utils.response_builder import success_response, error_response
+from core.punc_processor import PuncProcessor
+from utils.response_builder import success_response, error_response
 
 router = APIRouter(prefix="/api/v1/modules/punc", tags=["Punc"])
 

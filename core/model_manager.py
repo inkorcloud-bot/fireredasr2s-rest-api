@@ -3,8 +3,8 @@
 """
 
 from typing import Dict, Any, Optional
-from ..utils.logger import get_logger
-from ..utils.config_loader import get_config
+from utils.logger import get_logger
+from utils.config_loader import get_config
 
 logger = get_logger(__name__)
 
@@ -19,7 +19,7 @@ class ModelManager:
         self._loaded: Dict[str, bool] = {'asr': False, 'vad': False, 'lid': False, 'punc': False}
         self._model_classes: Dict[str, Any] = {}
         try:
-            from ..models import ASRModel, VADModel, LIDModel, PuncModel
+            from models import ASRModel, VADModel, LIDModel, PuncModel
             self._model_classes = {'asr': ASRModel, 'vad': VADModel, 'lid': LIDModel, 'punc': PuncModel}
             logger.info("模型类导入成功")
         except ImportError as e:

@@ -8,10 +8,10 @@ import time
 import uuid
 from fastapi import UploadFile
 from typing import Dict, Any
-from ..utils.logger import get_logger
-from ..utils.audio_validator import validate_audio_file, get_audio_duration
-from ..utils.response_builder import success_response, error_response
-from ..utils.error_codes import ErrorCode
+from utils.logger import get_logger
+from utils.audio_validator import validate_audio_file, get_audio_duration
+from utils.response_builder import success_response, error_response
+from utils.error_codes import ErrorCode
 
 logger = get_logger(__name__)
 

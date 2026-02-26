@@ -5,8 +5,8 @@ LID 处理器 - 语种识别
 import os, tempfile, uuid
 from fastapi import UploadFile
 from typing import Dict, Any
-from ..utils.logger import get_logger
-from ..utils.audio_validator import validate_audio_file
+from utils.logger import get_logger
+from utils.audio_validator import validate_audio_file
 
 logger = get_logger(__name__)
 

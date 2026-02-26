@@ -1,8 +1,8 @@
 """LID 模块路由"""
 
 from fastapi import APIRouter, UploadFile, File
-from ...core.lid_processor import LIDProcessor
-from ...utils.response_builder import success_response, error_response
+from core.lid_processor import LIDProcessor
+from utils.response_builder import success_response, error_response
 
 router = APIRouter(prefix="/api/v1/modules/lid", tags=["LID"])
 

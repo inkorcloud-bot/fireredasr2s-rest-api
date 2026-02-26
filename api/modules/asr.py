@@ -2,9 +2,9 @@
 
 from fastapi import APIRouter, UploadFile, File, Form
 from typing import Dict, Any
-from ..core.model_manager import ModelManager
-from ..core.asr_processor import ASRProcessor
-from ..utils.response_builder import success_response, error_response
+from core.model_manager import ModelManager
+from core.asr_processor import ASRProcessor
+from utils.response_builder import success_response, error_response
 
 router = APIRouter(tags=["ASR"])
 VERSION = "1.0.0"

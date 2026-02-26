@@ -4,7 +4,7 @@ Punc 处理器 - 标点预测
 
 import uuid
 from typing import List, Dict, Any
-from ..utils.logger import get_logger
+from utils.logger import get_logger
 
 logger = get_logger(__name__)
 

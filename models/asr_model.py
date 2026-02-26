@@ -4,7 +4,7 @@ ASR 模型封装类
 
 import time
 from typing import Dict, Any
-from ..utils.logger import get_logger
+from utils.logger import get_logger
 
 # 导入 FireRedASR2S 相关模块
 try:

@@ -7,11 +7,14 @@
 
 ## 安装步骤
 
-### 1. 克隆或下载项目
+### 1. 克隆项目并初始化子模块
 
 ```bash
 git clone <repository-url>
 cd fireredasr2s-rest-api
+
+# 初始化 FireRedASR2S 子模块（必需）
+git submodule update --init --recursive
 ```
 
 ### 2. 安装 PyTorch（重要！）

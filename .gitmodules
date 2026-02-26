@@ -1,0 +1,3 @@
+[submodule "FireRedASR2S"]
+	path = FireRedASR2S
+	url = https://github.com/FireRedTeam/FireRedASR2S.git

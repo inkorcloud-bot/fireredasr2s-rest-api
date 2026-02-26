@@ -25,6 +25,17 @@ class ModelManager:
         except ImportError as e:
             logger.error(f"模型类导入失败: {e}")
     
+    async def initialize(self) -> None:
+        """异步初始化：预加载模型（在事件循环中执行避免阻塞）"""
+        self.preload_models()
+    
+    async def cleanup(self) -> None:
+        """异步清理：释放模型资源"""
+        for name in list(self._models.keys()):
+            self._models[name] = None
+            self._loaded[name] = False
+        logger.info("模型资源已释放")
+    
     def preload_models(self) -> None:
         """根据配置预加载模型，如果 preload_on_start=True 则加载所有启用的模型"""
         if not self.config.get('preload_on_start', False):

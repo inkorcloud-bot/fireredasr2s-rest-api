@@ -2,6 +2,15 @@
 FireRedASR2S REST API - 主应用入口
 工业级语音识别服务
 """
+# 将 FireRedASR2S 子模块路径加入 sys.path，确保可正确导入 fireredasr2s
+import sys
+from pathlib import Path
+_submodule_path = Path(__file__).resolve().parent / "FireRedASR2S"
+if _submodule_path.exists():
+    _path_str = str(_submodule_path)
+    if _path_str not in sys.path:
+        sys.path.insert(0, _path_str)
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
@@ -40,7 +49,7 @@ async def startup_event():
     logger.info("Starting FireRedASR2S REST API...")
     config = load_config("config.yaml")
     logger.info("Configuration loaded")
-    model_manager = ModelManager(config)
+    model_manager = ModelManager(config.get("models", {}))
     await model_manager.initialize()
     logger.info("FireRedASR2S REST API started successfully")
 

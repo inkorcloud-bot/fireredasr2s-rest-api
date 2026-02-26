@@ -15,10 +15,11 @@ COPY requirements.txt .
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 # 复制项目文件
+# 构建前请先执行: git submodule update --init --recursive
 COPY . .
 
 # 暴露 8000 端口
 EXPOSE 8000
 
 # 设置启动命令
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

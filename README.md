@@ -27,10 +27,11 @@ FireRedASR2S REST API 是一个基于 FastAPI 构建的语音识别 REST 服务�
 
 **⚠️ 重要：详细的安装步骤请参考 [INSTALL.md](INSTALL.md)**
 
-1. **克隆项目**
+1. **克隆项目并初始化子模块**
    ```bash
    git clone <repository-url>
    cd fireredasr2s-rest-api
+   git submodule update --init --recursive  # 初始化 FireRedASR2S 子模块
    ```
 
 2. **安装 PyTorch（根据环境手动安装）**
@@ -89,6 +90,8 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
 ### Docker 部署（可选）
+
+**构建前请先初始化子模块**：`git submodule update --init --recursive`
 
 如果使用 Docker 部署：
 
@@ -221,6 +224,7 @@ curl -X POST http://localhost:8000/api/v1/admin/clear-cache
 
 ```
 fireredasr2s-rest-api/
+├── FireRedASR2S/           # FireRedASR2S 子模块（git submodule）
 ├── api/                    # API 路由
 │   ├── modules/           # 功能模块
 │   │   ├── asr.py         # ASR 识别

@@ -23,8 +23,8 @@ FireRedASR2S REST API 是一个基于 FastAPI 构建的语音识别 REST 服务�
 
 - Python 3.10
 - PyTorch 2.1.0 + torchaudio 2.1.0 (CUDA 11.8)
-- FFmpeg（用于 mp3/flac 等格式转码）：`apt install ffmpeg`
 - Conda（推荐使用 Miniconda 或 Anaconda）
+- FFmpeg（使用 conda 会自动安装）
 
 ### 快速启动
 
@@ -72,7 +72,7 @@ FireRedASR2S REST API 是一个基于 FastAPI 构建的语音识别 REST 服务�
 
 3. **安装其他依赖**
    ```bash
-   pip install -r requirements.txt
+   pip install fastapi>=0.104.0 uvicorn[standard]>=0.24.0 python-multipart>=0.0.6 pydantic>=2.0.0 pydantic-settings>=2.0.0 pyyaml>=6.0 python-dotenv>=1.0.0 aiofiles>=23.0.0 websockets>=12.0.0 python-json-logger>=2.0.0 psutil>=5.9.0 ffmpeg-python>=0.2.0 transformers>=4.51.3 numpy>=1.26.1 cn2an>=0.5.23 kaldiio>=2.18.0 kaldi_native_fbank>=1.15 sentencepiece>=0.1.99 soundfile>=0.12.1 textgrid>=1.5
    ```
 
 4. **下载模型**
@@ -248,17 +248,12 @@ curl -X POST http://localhost:8000/api/v1/admin/clear-cache
 
 2. **安装其他依赖**
    ```bash
-   pip install -r requirements.txt
+   pip install fastapi>=0.104.0 uvicorn[standard]>=0.24.0 python-multipart>=0.0.6 pydantic>=2.0.0 pydantic-settings>=2.0.0 pyyaml>=6.0 python-dotenv>=1.0.0 aiofiles>=23.0.0 websockets>=12.0.0 python-json-logger>=2.0.0 psutil>=5.9.0 ffmpeg-python>=0.2.0 transformers>=4.51.3 numpy>=1.26.1 cn2an>=0.5.23 kaldiio>=2.18.0 kaldi_native_fbank>=1.15 sentencepiece>=0.1.99 soundfile>=0.12.1 textgrid>=1.5
    ```
 
 3. **启动开发服务器**
    ```bash
    uvicorn main:app --reload --host 0.0.0.0 --port 8000
-   ```
-
-4. **运行测试**
-   ```bash
-   pytest tests/
    ```
 
 ### 项目结构
@@ -281,9 +276,9 @@ fireredasr2s-rest-api/
 ├── utils/                 # 工具函数
 ├── config.yaml            # 配置文件
 ├── environment.yml        # Conda 环境配置
+├── setup_conda.sh         # Conda 环境一键设置脚本
 ├── Dockerfile             # Docker 构建文件
-├── docker-compose.yml     # Docker Compose 配置
-└── requirements.txt       # Python 依赖
+└── docker-compose.yml     # Docker Compose 配置
 ```
 
 ### 代码规范

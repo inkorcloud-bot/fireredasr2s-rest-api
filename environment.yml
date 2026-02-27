@@ -24,7 +24,7 @@ dependencies:
       - python-json-logger>=2.0.0
       - psutil>=5.9.0
       - ffmpeg-python>=0.2.0
-      - transformers>=4.51.3
+      - transformers>=4.51.3,<5.0.0
       - numpy>=1.26.1
       - cn2an>=0.5.23
       - kaldiio>=2.18.0
@@ -32,3 +32,4 @@ dependencies:
       - sentencepiece>=0.1.99
       - soundfile>=0.12.1
       - textgrid>=1.5
+      - peft>=0.10.0

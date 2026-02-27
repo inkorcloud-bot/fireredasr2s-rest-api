@@ -11,6 +11,11 @@ if _submodule_path.exists():
     if _path_str not in sys.path:
         sys.path.insert(0, _path_str)
 
+# PyTorch 2.6+ 兼容：预训练 checkpoint 含 argparse.Namespace，需加入 safe_globals
+import argparse
+import torch
+torch.serialization.add_safe_globals([argparse.Namespace])
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn

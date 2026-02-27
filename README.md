@@ -197,6 +197,24 @@ ws.onmessage = (event) => {
 ws.send(audioData);
 ```
 
+### 异步转录（长音频推荐）
+
+适用于 1 小时以上的会议录音等，避免 HTTP 超时：
+
+```bash
+# 1. 提交任务，立即获得 job_id
+JOB_ID=$(curl -s -X POST http://localhost:8000/api/v1/system/transcribe/submit \
+  -F "audio=@meeting.aac" | jq -r '.data.job_id')
+
+# 2. 轮询状态
+curl "http://localhost:8000/api/v1/system/transcribe/status/$JOB_ID"
+
+# 3. 完成后获取结果
+curl "http://localhost:8000/api/v1/system/transcribe/result/$JOB_ID"
+```
+
+状态说明：`pending` → `processing` → `completed` 或 `failed`
+
 ### 系统状态查询
 
 ```bash

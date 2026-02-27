@@ -12,6 +12,7 @@ class ErrorCode:
     AUDIO_DURATION_EXCEEDED = 4003
     MODEL_NOT_LOADED = 4010
     TRANSCODE_FAILED = 4004
+    JOB_NOT_FOUND = 4005
     INTERNAL_SERVER_ERROR = 5000
     MODEL_INFERENCE_ERROR = 5001
     GPU_OUT_OF_MEMORY = 5002
@@ -25,6 +26,7 @@ ERROR_MESSAGES = {
     ErrorCode.AUDIO_FILE_TOO_LARGE: "音频文件过大",
     ErrorCode.AUDIO_DURATION_EXCEEDED: "音频时长超过限制",
     ErrorCode.TRANSCODE_FAILED: "音频转码失败",
+    ErrorCode.JOB_NOT_FOUND: "任务不存在或已过期",
     ErrorCode.MODEL_NOT_LOADED: "模型未加载",
     ErrorCode.INTERNAL_SERVER_ERROR: "内部服务器错误",
     ErrorCode.MODEL_INFERENCE_ERROR: "模型推理错误",

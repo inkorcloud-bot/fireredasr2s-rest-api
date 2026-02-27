@@ -115,6 +115,117 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/v1/system/transcribe/submit:
+    post:
+      tags: [system]
+      summary: 提交异步转录任务
+      description: |
+        适用于长时间音频（如会议录音）。立即返回 job_id，客户端轮询：
+        - GET /system/transcribe/status/{job_id} 获取任务状态
+        - GET /system/transcribe/result/{job_id} 获取识别结果
+      operationId: systemTranscribeSubmit
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [audio]
+              properties:
+                audio:
+                  type: string
+                  format: binary
+                  description: 音频文件
+                uttid:
+                  type: string
+                  description: 话语ID
+                enable_vad:
+                  type: boolean
+                  default: true
+                enable_lid:
+                  type: boolean
+                  default: true
+                enable_punc:
+                  type: boolean
+                  default: true
+                asr_type:
+                  type: string
+                  default: aed
+                return_timestamp:
+                  type: boolean
+                  default: false
+      responses:
+        '200':
+          description: 任务已提交
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 0
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      job_id:
+                        type: string
+                        format: uuid
+        '500':
+          description: 服务器错误
+
+  /api/v1/system/transcribe/status/{job_id}:
+    get:
+      tags: [system]
+      summary: 查询转录任务状态
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 成功（data.status 为 pending/processing/completed/failed；任务不存在时 code=4005）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  data:
+                    type: object
+                    properties:
+                      job_id:
+                        type: string
+                      status:
+                        type: string
+                        enum: [pending, processing, completed, failed]
+                      filename:
+                        type: string
+                      created_at:
+                        type: number
+
+  /api/v1/system/transcribe/result/{job_id}:
+    get:
+      tags: [system]
+      summary: 获取转录结果
+      description: 仅当 status=completed 时返回完整识别结果；status=failed 时返回错误信息
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 成功（completed 时 data 为识别结果；failed 时返回错误；进行中时提示稍后重试；任务不存在时 code=4005）
+
   /api/v1/admin/config:
     get:
       tags: [admin]

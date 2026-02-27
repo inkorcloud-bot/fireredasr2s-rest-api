@@ -44,11 +44,14 @@ class VADProcessor:
                     pass
 
     async def aed_detect(self, audio_file: UploadFile) -> Dict[str, Any]:
-        """音频事件检测"""
+        """音频事件检测。FireRedAsr2System 不包含 FireRedAed，统一加载时不可用"""
         vad_model = self.model_manager.get_model('vad')
         if not vad_model:
             return error_response(500, "VAD 模型未加载")
-        
+
+        if getattr(vad_model, "supports_aed", lambda: True)() is False:
+            return error_response(503, "AED 功能在使用 FireRedAsr2System 统一加载时不可用")
+
         wav_path = None
         try:
             audio_info, wav_path = prepare_audio_for_asr(audio_file, self.config)

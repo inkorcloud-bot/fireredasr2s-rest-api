@@ -45,17 +45,15 @@ logger = None
 
 @app.on_event("startup")
 async def startup_event():
-    """启动事件：加载配置，初始化模型管理器，预加载模型，创建一站式 ASR System"""
+    """启动事件：先创建 FireRedAsr2System，再初始化 ModelManager（从 asr_system 提取独立模块）"""
     global model_manager, asr_system, config, logger
     logger = setup_logger(__name__)
     logger.info("Starting FireRedASR2S REST API...")
     config = load_config("config.yaml")
     logger.info("Configuration loaded")
     models_config = config.get("models", {})
-    model_manager = ModelManager(models_config)
-    await model_manager.initialize()
-    app.state.model_manager = model_manager
 
+    # 1. 先创建 FireRedAsr2System（当 asr.enabled 时）
     if models_config.get("asr", {}).get("enabled", False):
         try:
             asr_system = create_asr_system(models_config)
@@ -63,9 +61,25 @@ async def startup_event():
             logger.info("FireRedAsr2System 已加载")
         except Exception as e:
             logger.error(f"FireRedAsr2System 加载失败: {e}")
+            asr_system = None
             app.state.asr_system = None
     else:
+        asr_system = None
         app.state.asr_system = None
+
+    # 2. 初始化 ModelManager，传入 asr_system，独立模块从其中提取
+    def on_reload(new_system):
+        global asr_system
+        asr_system = new_system
+        app.state.asr_system = new_system
+
+    model_manager = ModelManager(
+        config=models_config,
+        asr_system=asr_system,
+        on_reload=on_reload
+    )
+    await model_manager.initialize()
+    app.state.model_manager = model_manager
 
     logger.info("FireRedASR2S REST API started successfully")
 

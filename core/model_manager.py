@@ -1,8 +1,10 @@
 """
 模型管理器 - 统一管理所有模型的生命周期
+以 FireRedAsr2System 为单一模型源，独立模块从 FireRedAsr2System 中提取
 """
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Callable
+
 from utils.logger import get_logger
 from utils.config_loader import get_config
 
@@ -10,81 +12,80 @@ logger = get_logger(__name__)
 
 
 class ModelManager:
-    """统一的模型管理器，管理所有模型的生命周期"""
-    
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
-        """初始化模型管理器，创建所有模型实例但不加载"""
+    """统一的模型管理器，从 FireRedAsr2System 提取各模块"""
+
+    def __init__(
+        self,
+        config: Optional[Dict[str, Any]] = None,
+        asr_system: Optional[Any] = None,
+        on_reload: Optional[Callable[[Any], None]] = None
+    ):
         self.config = config or get_config().get('models', {})
-        self._models: Dict[str, Any] = {'asr': None, 'vad': None, 'lid': None, 'punc': None}
-        self._loaded: Dict[str, bool] = {'asr': False, 'vad': False, 'lid': False, 'punc': False}
-        self._model_classes: Dict[str, Any] = {}
-        try:
-            from models import ASRModel, VADModel, LIDModel, PuncModel
-            self._model_classes = {'asr': ASRModel, 'vad': VADModel, 'lid': LIDModel, 'punc': PuncModel}
-            logger.info("模型类导入成功")
-        except ImportError as e:
-            logger.error(f"模型类导入失败: {e}")
-    
+        self._asr_system = asr_system
+        self._on_reload = on_reload
+
+    def set_asr_system(self, asr_system: Optional[Any]) -> None:
+        """设置或更新 asr_system 引用"""
+        self._asr_system = asr_system
+
     async def initialize(self) -> None:
-        """异步初始化：预加载模型（在事件循环中执行避免阻塞）"""
-        self.preload_models()
-    
+        """异步初始化（保持接口兼容，统一模式下无需预加载）"""
+        pass
+
     async def cleanup(self) -> None:
         """异步清理：释放模型资源"""
-        for name in list(self._models.keys()):
-            self._models[name] = None
-            self._loaded[name] = False
+        self._asr_system = None
         logger.info("模型资源已释放")
-    
+
     def preload_models(self) -> None:
-        """根据配置预加载模型，如果 preload_on_start=True 则加载所有启用的模型"""
-        if not self.config.get('preload_on_start', False):
-            return
-        logger.info("开始预加载模型...")
-        for name in ['asr', 'vad', 'lid', 'punc']:
-            if self.config.get(name, {}).get('enabled', False):
-                model_class = self._model_classes.get(name)
-                if model_class and not self._loaded[name]:
-                    try:
-                        model_instance = model_class(self.config.get(name, {}))
-                        model_instance.load()
-                        self._models[name] = model_instance
-                        self._loaded[name] = True
-                        logger.info(f"{name} 模型加载成功")
-                    except Exception as e:
-                        logger.error(f"{name} 模型加载失败: {e}")
-        logger.info("模型预加载完成")
-    
-    def reload_modules(self, modules: list) -> Dict[str, list]:
-        """热重载指定模块"""
+        """统一模式下由 FireRedAsr2System 负责加载，此处为 no-op"""
+        pass
+
+    def reload_modules(self, modules: Optional[list] = None) -> Dict[str, list]:
+        """热重载：重建整个 FireRedAsr2System"""
+        from core.asr_system_factory import create_asr_system
+
         result = {'success': [], 'failed': []}
-        for name in modules:
-            if name not in self._models:
-                result['failed'].append(name)
-                logger.warning(f"未知的模块: {name}")
-                continue
-            self._models[name] = None
-            self._loaded[name] = False
-            model_class = self._model_classes.get(name)
-            if model_class and not self._loaded[name]:
-                try:
-                    model_instance = model_class(self.config.get(name, {}))
-                    model_instance.load()
-                    self._models[name] = model_instance
-                    self._loaded[name] = True
+        try:
+            new_system = create_asr_system(self.config)
+            if self._on_reload:
+                self._on_reload(new_system)
+            self._asr_system = new_system
+            for name in (modules or ['asr', 'vad', 'lid', 'punc']):
+                if name in ['asr', 'vad', 'lid', 'punc']:
                     result['success'].append(name)
-                    logger.info(f"{name} 模型热重载成功")
-                except Exception as e:
-                    result['failed'].append(name)
-                    logger.error(f"{name} 模型热重载失败: {e}")
-            else:
-                result['failed'].append(name)
+            logger.info("FireRedAsr2System 热重载成功")
+        except Exception as e:
+            logger.error(f"FireRedAsr2System 热重载失败: {e}")
+            result['failed'] = modules or ['asr', 'vad', 'lid', 'punc']
         return result
-    
+
     def get_model(self, module_name: str) -> Optional[Any]:
-        """获取指定模型实例，如果未加载则返回 None"""
-        return self._models.get(module_name)
-    
+        """获取指定模块的适配器实例，若 asr_system 无对应子模块则返回 None"""
+        from core.adapters import ASRAdapter, VADAdapter, LIDAdapter, PuncAdapter
+
+        if not self._asr_system:
+            return None
+
+        if module_name == 'asr' and self._asr_system.asr is not None:
+            return ASRAdapter(self._asr_system.asr)
+        if module_name == 'vad' and self._asr_system.vad is not None:
+            return VADAdapter(self._asr_system.vad)
+        if module_name == 'lid' and self._asr_system.lid is not None:
+            return LIDAdapter(self._asr_system.lid)
+        if module_name == 'punc' and self._asr_system.punc is not None:
+            return PuncAdapter(self._asr_system.punc)
+        return None
+
     def get_status(self) -> Dict[str, str]:
-        """获取所有模型加载状态"""
-        return {name: 'loaded' if self._loaded[name] else 'unloaded' for name in ['asr', 'vad', 'lid', 'punc']}
+        """获取所有模型加载状态（基于 asr_system）"""
+        if not self._asr_system:
+            return {'asr': 'unloaded', 'vad': 'unloaded', 'lid': 'unloaded', 'punc': 'unloaded'}
+
+        c = self._asr_system.config
+        return {
+            'asr': 'loaded' if self._asr_system.asr is not None else 'unloaded',
+            'vad': 'loaded' if (c.enable_vad and self._asr_system.vad is not None) else 'unloaded',
+            'lid': 'loaded' if (c.enable_lid and self._asr_system.lid is not None) else 'unloaded',
+            'punc': 'loaded' if (c.enable_punc and self._asr_system.punc is not None) else 'unloaded',
+        }

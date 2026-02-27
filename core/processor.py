@@ -7,6 +7,8 @@ import asyncio
 import os
 import time
 import uuid
+from io import BytesIO
+from types import SimpleNamespace
 from fastapi import UploadFile
 from typing import Dict, Any, Optional
 from utils.logger import get_logger
@@ -14,6 +16,13 @@ from utils.audio_validator import prepare_audio_for_asr
 from utils.config_loader import get_config
 
 logger = get_logger(__name__)
+
+
+def _make_upload_like(file_path: str, filename: str):
+    """从本地文件路径构造 UploadFile 兼容对象，供 prepare_audio_for_asr 使用"""
+    with open(file_path, "rb") as f:
+        content = f.read()
+    return SimpleNamespace(filename=filename, file=BytesIO(content))
 
 
 class RequestProcessor:
@@ -76,3 +85,35 @@ class RequestProcessor:
                     os.unlink(tmp_path)
                 except OSError as oe:
                     logger.warning(f"清理临时文件失败: {oe}")
+
+    async def transcribe_from_path(
+        self,
+        file_path: str,
+        filename: str,
+        asr_system,
+        uttid: str = None,
+        enable_vad: bool = True,
+        enable_lid: bool = True,
+        enable_punc: bool = True,
+        asr_type: str = "aed",
+        return_timestamp: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        从本地文件路径执行一站式语音识别（用于异步任务）。
+        调用方负责在调用完成后删除 file_path。
+        """
+        upload_like = _make_upload_like(file_path, filename)
+        try:
+            return await self.transcribe(
+                audio_file=upload_like,
+                asr_system=asr_system,
+                uttid=uttid,
+                enable_vad=enable_vad,
+                enable_lid=enable_lid,
+                enable_punc=enable_punc,
+                asr_type=asr_type,
+                return_timestamp=return_timestamp,
+            )
+        finally:
+            if hasattr(upload_like.file, "close"):
+                upload_like.file.close()  # type: ignore

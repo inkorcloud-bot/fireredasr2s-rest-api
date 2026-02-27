@@ -59,7 +59,7 @@ class RequestProcessor:
             if not asr_model:
                 raise ValueError("ASR 模型未加载")
             
-            asr_result = await asr_model.transcribe(tmp_path, return_timestamp=return_timestamp)
+            asr_result = asr_model.transcribe(tmp_path, return_timestamp=return_timestamp)
             result['text'] = asr_result.get('text', '')
             result['sentences'] = asr_result.get('sentences', [])
             if return_timestamp:
@@ -69,23 +69,24 @@ class RequestProcessor:
             if enable_vad:
                 vad_model = self.model_manager.get_model('vad')
                 if vad_model:
-                    vad_result = await vad_model.detect(tmp_path)
-                    result['vad_segments_ms'] = vad_result.get('segments', [])
+                    vad_result = vad_model.detect(tmp_path)
+                    result['vad_segments_ms'] = vad_result.get('segments', vad_result.get('timestamps', []))
             
             # LID 检测
             if enable_lid:
                 lid_model = self.model_manager.get_model('lid')
                 if lid_model:
-                    lid_result = await lid_model.detect(tmp_path)
-                    result['language'] = lid_result.get('language', 'unknown')
-                    result['language_score'] = lid_result.get('score', 0)
+                    lid_result = lid_model.detect(tmp_path)
+                    result['language'] = lid_result.get('language', lid_result.get('lang', 'unknown'))
+                    result['language_score'] = lid_result.get('score', lid_result.get('confidence', 0))
             
             # Punc 预测
             if enable_punc and result['text']:
                 punc_model = self.model_manager.get_model('punc')
                 if punc_model:
-                    punc_result = await punc_model.predict(result['text'])
-                    result['text'] = punc_result.get('text', result['text'])
+                    punc_result = punc_model.predict([result['text']])
+                    if punc_result:
+                        result['text'] = punc_result[0].get('punc_text', result['text'])
             
         except Exception as e:
             logger.error(f"语音识别失败: {e}")

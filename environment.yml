@@ -6,9 +6,9 @@ channels:
   - defaults
 dependencies:
   - python=3.10
-  - pytorch=2.1.0
-  - torchaudio=2.1.0
-  - pytorch-cuda=11.8
+  - pytorch=2.6.0
+  - torchaudio=2.6.0
+  - pytorch-cuda=12.6
   - ffmpeg
   - pip
   - pip:

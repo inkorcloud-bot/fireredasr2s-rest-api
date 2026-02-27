@@ -11,7 +11,7 @@ echo "=========================================="
 echo ""
 
 # 检查 conda 是否安装
-if ! command -v conda &> /dev/null; then
+if command -v conda &> /dev/null; then
     echo "✓ Conda 已安装"
 else
     echo "✗ Conda 未安装，请先安装 Miniconda 或 Anaconda"

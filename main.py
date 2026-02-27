@@ -26,6 +26,7 @@ from api.modules.punc import router as punc_router
 
 # 导入核心模块
 from core.model_manager import ModelManager
+from core.asr_system_factory import create_asr_system
 from utils.config_loader import load_config
 from utils.logger import setup_logger
 
@@ -38,29 +39,44 @@ app = FastAPI(
 
 # 全局变量
 model_manager = None
+asr_system = None
 config = None
 logger = None
 
 @app.on_event("startup")
 async def startup_event():
-    """启动事件：加载配置，初始化模型管理器，预加载模型"""
-    global model_manager, config, logger
+    """启动事件：加载配置，初始化模型管理器，预加载模型，创建一站式 ASR System"""
+    global model_manager, asr_system, config, logger
     logger = setup_logger(__name__)
     logger.info("Starting FireRedASR2S REST API...")
     config = load_config("config.yaml")
     logger.info("Configuration loaded")
-    model_manager = ModelManager(config.get("models", {}))
+    models_config = config.get("models", {})
+    model_manager = ModelManager(models_config)
     await model_manager.initialize()
     app.state.model_manager = model_manager
+
+    if models_config.get("asr", {}).get("enabled", False):
+        try:
+            asr_system = create_asr_system(models_config)
+            app.state.asr_system = asr_system
+            logger.info("FireRedAsr2System 已加载")
+        except Exception as e:
+            logger.error(f"FireRedAsr2System 加载失败: {e}")
+            app.state.asr_system = None
+    else:
+        app.state.asr_system = None
+
     logger.info("FireRedASR2S REST API started successfully")
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """关闭事件：清理模型资源"""
-    global model_manager, logger
+    global model_manager, asr_system, logger
     if model_manager:
         await model_manager.cleanup()
         logger.info("Model resources cleaned up")
+    asr_system = None
     logger.info("FireRedASR2S REST API shutdown complete")
 
 # CORS配置

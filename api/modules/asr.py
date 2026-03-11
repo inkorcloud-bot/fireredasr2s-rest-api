@@ -15,9 +15,7 @@ VERSION = "1.0.0"
 @router.post("/asr/transcribe")
 async def asr_batch_transcribe(
     audios: list[UploadFile] = File(..., description="多个音频文件"),
-    asr_type: str = Form("aed", description="ASR类型"),
     beam_size: int = Form(3, description="beam size"),
-    return_timestamp: bool = Form(False, description="返回时间戳"),
     manager: Optional[ModelManager] = Depends(get_model_manager)
 ) -> Dict[str, Any]:
     """
@@ -31,9 +29,7 @@ async def asr_batch_transcribe(
         
         result = await processor.batch_transcribe(
             audio_files=audios,
-            asr_type=asr_type,
             beam_size=beam_size,
-            return_timestamp=return_timestamp
         )
         
         return success_response(result, "批量转录完成")

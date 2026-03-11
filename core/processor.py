@@ -38,16 +38,9 @@ class RequestProcessor:
         audio_file: UploadFile,
         asr_system,
         uttid: str = None,
-        enable_vad: bool = True,
-        enable_lid: bool = True,
-        enable_punc: bool = True,
-        asr_type: str = "aed",
-        return_timestamp: bool = False,
     ) -> Dict[str, Any]:
         """
         一站式语音识别，调用 FireRedAsr2System.process 执行完整流水线。
-        注意：enable_vad/enable_lid/enable_punc/asr_type/return_timestamp 由 config.yaml 决定，
-        请求参数保留以兼容现有调用，当前实现以服务端配置为准。
         Returns: {
             'uttid': str, 'text': str, 'dur_s': float,
             'sentences': [...], 'vad_segments_ms': [...],
@@ -92,11 +85,6 @@ class RequestProcessor:
         filename: str,
         asr_system,
         uttid: str = None,
-        enable_vad: bool = True,
-        enable_lid: bool = True,
-        enable_punc: bool = True,
-        asr_type: str = "aed",
-        return_timestamp: bool = False,
     ) -> Dict[str, Any]:
         """
         从本地文件路径执行一站式语音识别（用于异步任务）。
@@ -108,11 +96,6 @@ class RequestProcessor:
                 audio_file=upload_like,
                 asr_system=asr_system,
                 uttid=uttid,
-                enable_vad=enable_vad,
-                enable_lid=enable_lid,
-                enable_punc=enable_punc,
-                asr_type=asr_type,
-                return_timestamp=return_timestamp,
             )
         finally:
             if hasattr(upload_like.file, "close"):

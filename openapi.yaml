@@ -81,26 +81,6 @@ paths:
                 uttid:
                   type: string
                   description: 话语ID
-                enable_vad:
-                  type: boolean
-                  default: true
-                  description: 启用VAD
-                enable_lid:
-                  type: boolean
-                  default: true
-                  description: 启用LID
-                enable_punc:
-                  type: boolean
-                  default: true
-                  description: 启用标点
-                asr_type:
-                  type: string
-                  default: aed
-                  description: ASR类型
-                return_timestamp:
-                  type: boolean
-                  default: false
-                  description: 返回时间戳
       responses:
         '200':
           description: 识别成功
@@ -139,21 +119,6 @@ paths:
                 uttid:
                   type: string
                   description: 话语ID
-                enable_vad:
-                  type: boolean
-                  default: true
-                enable_lid:
-                  type: boolean
-                  default: true
-                enable_punc:
-                  type: boolean
-                  default: true
-                asr_type:
-                  type: string
-                  default: aed
-                return_timestamp:
-                  type: boolean
-                  default: false
       responses:
         '200':
           description: 任务已提交
@@ -329,18 +294,10 @@ paths:
                     type: string
                     format: binary
                   description: 多个音频文件
-                asr_type:
-                  type: string
-                  default: aed
-                  description: ASR类型
                 beam_size:
                   type: integer
                   default: 3
                   description: beam size
-                return_timestamp:
-                  type: boolean
-                  default: false
-                  description: 返回时间戳
       responses:
         '200':
           description: 批量转录完成

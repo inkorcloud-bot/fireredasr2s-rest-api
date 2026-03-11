@@ -22,9 +22,7 @@ class ASRProcessor:
         self,
         audio_files: List[UploadFile],
         uttids: List[str] = None,
-        asr_type: str = "aed",
         beam_size: int = 3,
-        return_timestamp: bool = False
     ) -> Dict[str, Any]:
         """批量语音识别"""
         results = []
@@ -40,9 +38,8 @@ class ASRProcessor:
                 audio_info, wav_path = prepare_audio_for_asr(file, self.config)
                 start = time.time()
                 result = asr_model.transcribe(
-                    wav_path, asr_type=asr_type,
+                    wav_path,
                     beam_size=beam_size,
-                    return_timestamp=return_timestamp
                 )
                 results.append({
                     'uttid': uttids[idx] if uttids else f'utt_{idx}',

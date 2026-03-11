@@ -1,8 +1,7 @@
 """系统一站式识别路由
 
 使用 FireRedAsr2System.process 执行 VAD→ASR→LID→Punc 完整流水线。
-enable_vad/enable_lid/enable_punc/asr_type/return_timestamp 由 config.yaml 决定，
-请求参数保留以兼容现有调用。
+流水线行为（VAD/LID/Punc/ASR类型/时间戳）由 config.yaml 决定。
 
 支持两种模式：
 - 同步：POST /system/transcribe，等待识别完成后返回
@@ -28,11 +27,6 @@ router = APIRouter(tags=["system"])
 async def system_transcribe(
     audio: UploadFile = File(..., description="音频文件"),
     uttid: str = Form(None, description="话语ID"),
-    enable_vad: bool = Form(True, description="启用VAD（以 config 为准）"),
-    enable_lid: bool = Form(True, description="启用LID（以 config 为准）"),
-    enable_punc: bool = Form(True, description="启用标点（以 config 为准）"),
-    asr_type: str = Form("aed", description="ASR类型（以 config 为准）"),
-    return_timestamp: bool = Form(False, description="返回时间戳（以 config 为准）"),
     manager: Optional[ModelManager] = Depends(get_model_manager),
     asr_system: Optional[Any] = Depends(get_asr_system),
 ) -> Dict[str, Any]:
@@ -48,11 +42,6 @@ async def system_transcribe(
             audio_file=audio,
             asr_system=asr_system,
             uttid=uttid,
-            enable_vad=enable_vad,
-            enable_lid=enable_lid,
-            enable_punc=enable_punc,
-            asr_type=asr_type,
-            return_timestamp=return_timestamp,
         )
         return success_response(result, "识别成功")
     except Exception as e:
@@ -77,7 +66,6 @@ async def _run_transcribe_job(job_id: str, app: Any) -> None:
         job_store.set_failed(job_id, "ASR System 未加载")
         _cleanup_tmp(tmp_path)
         return
-    params = job.get("params") or {}
     try:
         processor = RequestProcessor(manager or {}, {})
         result = await processor.transcribe_from_path(
@@ -85,11 +73,6 @@ async def _run_transcribe_job(job_id: str, app: Any) -> None:
             filename=job.get("filename", "audio.wav"),
             asr_system=asr_system,
             uttid=job.get("uttid"),
-            enable_vad=params.get("enable_vad", True),
-            enable_lid=params.get("enable_lid", True),
-            enable_punc=params.get("enable_punc", True),
-            asr_type=params.get("asr_type", "aed"),
-            return_timestamp=params.get("return_timestamp", False),
         )
         job_store.set_completed(job_id, result)
         logger.info(f"异步任务完成: job_id={job_id}")
@@ -113,11 +96,6 @@ async def system_transcribe_submit(
     request: Request,
     audio: UploadFile = File(..., description="音频文件"),
     uttid: str = Form(None, description="话语ID"),
-    enable_vad: bool = Form(True, description="启用VAD"),
-    enable_lid: bool = Form(True, description="启用LID"),
-    enable_punc: bool = Form(True, description="启用标点"),
-    asr_type: str = Form("aed", description="ASR类型"),
-    return_timestamp: bool = Form(False, description="返回时间戳"),
     manager: Optional[ModelManager] = Depends(get_model_manager),
     asr_system: Optional[Any] = Depends(get_asr_system),
 ) -> Dict[str, Any]:
@@ -138,13 +116,6 @@ async def system_transcribe_submit(
             tmp_path=tmp_path,
             filename=filename,
             uttid=uttid,
-            params={
-                "enable_vad": enable_vad,
-                "enable_lid": enable_lid,
-                "enable_punc": enable_punc,
-                "asr_type": asr_type,
-                "return_timestamp": return_timestamp,
-            },
         )
         asyncio.create_task(_run_transcribe_job(job_id, request.app))
         return success_response({"job_id": job_id}, "任务已提交，请轮询 /status/{job_id} 获取进度")

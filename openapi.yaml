@@ -415,7 +415,9 @@ paths:
       tags: [vad]
       summary: VAD 流式检测 (WebSocket)
       description: |
-        通过 WebSocket 实时进行语音活动检测。
+        **⚠️ 暂未实现：** 由于上游 FireRedASR2S 尚未实现流式实时转录功能，
+        目前仅保留此接口定义，实际调用将不返回有效的识别结果。待上游实现后将完整支持。
+
         连接地址：`ws://host:port/api/v1/modules/vad/stream`
         客户端发送二进制音频数据，服务端返回 JSON `{"is_speech": boolean}`
       operationId: vadStream

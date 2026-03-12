@@ -180,10 +180,14 @@ curl -X POST http://localhost:8000/api/v1/asr/transcribe \
   -F "language=zh"
 ```
 
-### WebSocket 实时识别
+### WebSocket 流式实时转录
+
+> **⚠️ 注意：该功能暂未开放**
+>
+> 由于上游 FireRedASR2S 尚未实现流式实时转录功能，目前仅保留接口定义，实际调用将不返回有效的识别结果。待上游实现后将完整支持。
 
 ```javascript
-const ws = new WebSocket('ws://localhost:8000/api/v1/asr/stream');
+const ws = new WebSocket('ws://localhost:8000/api/v1/modules/vad/stream');
 
 ws.onopen = () => {
   console.log('Connected');

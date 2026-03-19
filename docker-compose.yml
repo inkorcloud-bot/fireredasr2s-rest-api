@@ -19,5 +19,3 @@ services:
               count: all
               capabilities: [gpu]
     restart: unless-stopped
-    environment:
-      - CUDA_VISIBLE_DEVICES=0

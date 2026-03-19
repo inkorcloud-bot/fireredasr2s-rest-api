@@ -1,5 +1,5 @@
 # M28: Dockerfile
-FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+FROM nvidia/cuda:12.6.2-cudnn-runtime-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
     CONDA_DIR=/opt/conda \
@@ -23,7 +23,9 @@ WORKDIR /app
 # 先复制环境文件，尽量利用 Docker 构建缓存
 COPY environment.yml ./
 
-RUN conda env create -f environment.yml && \
+RUN conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main && \
+    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r && \
+    conda env create -f environment.yml && \
     conda clean -afy
 
 # 复制项目文件

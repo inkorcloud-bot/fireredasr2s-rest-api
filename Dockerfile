@@ -23,9 +23,7 @@ WORKDIR /app
 # 先复制环境文件，尽量利用 Docker 构建缓存
 COPY environment.yml ./
 
-RUN conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main && \
-    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r && \
-    conda env create -f environment.yml && \
+RUN conda env create -f environment.yml && \
     conda clean -afy
 
 # 复制项目文件

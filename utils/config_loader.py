@@ -4,7 +4,6 @@
 
 import os
 import yaml
-from dotenv import load_dotenv
 from typing import Dict, Any
 from .logger import get_logger
 
@@ -12,12 +11,9 @@ logger = get_logger(__name__)
 _global_config: Dict[str, Any] = {}
 
 def load_config(config_path: str = "config.yaml") -> Dict[str, Any]:
-    """加载配置文件和环境变量，返回合并后的配置"""
+    """加载配置文件和进程环境变量，返回合并后的配置"""
     global _global_config
-    
-    # 加载 .env 文件
-    load_dotenv()
-    
+
     # 加载 YAML 配置文件
     try:
         with open(config_path, 'r', encoding='utf-8') as f:

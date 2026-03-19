@@ -72,7 +72,7 @@ FireRedASR2S REST API 是一个基于 FastAPI 构建的语音识别 REST 服务�
 
 3. **安装其他依赖**
    ```bash
-   pip install fastapi>=0.104.0 uvicorn[standard]>=0.24.0 python-multipart>=0.0.6 pydantic>=2.0.0 pydantic-settings>=2.0.0 pyyaml>=6.0 python-dotenv>=1.0.0 aiofiles>=23.0.0 websockets>=12.0.0 python-json-logger>=2.0.0 psutil>=5.9.0 ffmpeg-python>=0.2.0 transformers>=4.51.3 numpy>=1.26.1 cn2an>=0.5.23 kaldiio>=2.18.0 kaldi_native_fbank>=1.15 sentencepiece>=0.1.99 soundfile>=0.12.1 textgrid>=1.5
+   pip install fastapi>=0.104.0 uvicorn[standard]>=0.24.0 python-multipart>=0.0.6 pydantic>=2.0.0 pydantic-settings>=2.0.0 pyyaml>=6.0 aiofiles>=23.0.0 websockets>=12.0.0 python-json-logger>=2.0.0 psutil>=5.9.0 ffmpeg-python>=0.2.0 transformers>=4.51.3 numpy>=1.26.1 cn2an>=0.5.23 kaldiio>=2.18.0 kaldi_native_fbank>=1.15 sentencepiece>=0.1.99 soundfile>=0.12.1 textgrid>=1.5
    ```
 
 4. **下载模型**
@@ -136,7 +136,9 @@ docker-compose down
 
 ## 配置说明
 
-### 环境变量（.env）
+### 环境变量
+
+服务仅读取进程环境变量，不会主动加载项目根目录的 `.env` 文件。在 Docker Compose 中，请使用 Compose 自身的环境变量机制注入配置。
 
 | 变量名 | 说明 | 示例 |
 |--------|------|------|
@@ -270,7 +272,7 @@ curl -X POST http://localhost:8000/api/v1/admin/clear-cache
 
 2. **安装其他依赖**
    ```bash
-   pip install fastapi>=0.104.0 uvicorn[standard]>=0.24.0 python-multipart>=0.0.6 pydantic>=2.0.0 pydantic-settings>=2.0.0 pyyaml>=6.0 python-dotenv>=1.0.0 aiofiles>=23.0.0 websockets>=12.0.0 python-json-logger>=2.0.0 psutil>=5.9.0 ffmpeg-python>=0.2.0 transformers>=4.51.3 numpy>=1.26.1 cn2an>=0.5.23 kaldiio>=2.18.0 kaldi_native_fbank>=1.15 sentencepiece>=0.1.99 soundfile>=0.12.1 textgrid>=1.5
+   pip install fastapi>=0.104.0 uvicorn[standard]>=0.24.0 python-multipart>=0.0.6 pydantic>=2.0.0 pydantic-settings>=2.0.0 pyyaml>=6.0 aiofiles>=23.0.0 websockets>=12.0.0 python-json-logger>=2.0.0 psutil>=5.9.0 ffmpeg-python>=0.2.0 transformers>=4.51.3 numpy>=1.26.1 cn2an>=0.5.23 kaldiio>=2.18.0 kaldi_native_fbank>=1.15 sentencepiece>=0.1.99 soundfile>=0.12.1 textgrid>=1.5
    ```
 
 3. **启动开发服务器**

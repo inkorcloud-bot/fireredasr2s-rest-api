@@ -10,7 +10,6 @@ services:
     volumes:
       - ./models:/app/models
       - ./config.yaml:/app/config.yaml
-      - ./.env:/app/.env
     deploy:
       resources:
         reservations:

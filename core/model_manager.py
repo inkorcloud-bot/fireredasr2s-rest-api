@@ -43,21 +43,34 @@ class ModelManager:
 
     def reload_modules(self, modules: Optional[list] = None) -> Dict[str, list]:
         """热重载：重建整个 FireRedAsr2System"""
-        from core.asr_system_factory import create_asr_system
+        from core.asr_system_factory import create_asr_system, summarize_models_config
 
         result = {'success': [], 'failed': []}
+        target_modules = modules or ['asr', 'vad', 'lid', 'punc']
+        logger.info(
+            "开始热重载 FireRedAsr2System: modules=%s, config=%s",
+            target_modules,
+            summarize_models_config(self.config),
+        )
         try:
             new_system = create_asr_system(self.config)
             if self._on_reload:
                 self._on_reload(new_system)
             self._asr_system = new_system
-            for name in (modules or ['asr', 'vad', 'lid', 'punc']):
+            for name in target_modules:
                 if name in ['asr', 'vad', 'lid', 'punc']:
                     result['success'].append(name)
             logger.info("FireRedAsr2System 热重载成功")
         except Exception as e:
-            logger.error(f"FireRedAsr2System 热重载失败: {e}")
-            result['failed'] = modules or ['asr', 'vad', 'lid', 'punc']
+            logger.exception(
+                "FireRedAsr2System 热重载失败。"
+                " exception_type=%s, exception=%r, modules=%s, config=%s",
+                type(e).__name__,
+                e,
+                target_modules,
+                summarize_models_config(self.config),
+            )
+            result['failed'] = target_modules
         return result
 
     def get_model(self, module_name: str) -> Optional[Any]:

@@ -4,11 +4,68 @@ ASR System 工厂模块
 不改动 FireRedASR2S 源码
 """
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
+
+
+def summarize_models_config(models_config: Dict[str, Any]) -> Dict[str, Any]:
+    """提取便于排查的模型配置摘要，避免日志过长。"""
+    asr_cfg = models_config.get("asr") or {}
+    vad_cfg = models_config.get("vad") or {}
+    lid_cfg = models_config.get("lid") or {}
+    punc_cfg = models_config.get("punc") or {}
+
+    return {
+        "asr": {
+            "enabled": asr_cfg.get("enabled", False),
+            "type": asr_cfg.get("type", "aed"),
+            "model_dir": asr_cfg.get("model_dir", "pretrained_models/FireRedASR2-AED"),
+            "use_gpu": asr_cfg.get("use_gpu", True),
+            "use_half": asr_cfg.get("use_half", False),
+            "beam_size": asr_cfg.get("beam_size", 5),
+        },
+        "vad": {
+            "enabled": vad_cfg.get("enabled", True),
+            "model_dir": vad_cfg.get("model_dir", "pretrained_models/FireRedVAD/VAD"),
+            "use_gpu": vad_cfg.get("use_gpu", True),
+            "speech_threshold": vad_cfg.get("speech_threshold", 0.5),
+        },
+        "lid": {
+            "enabled": lid_cfg.get("enabled", True),
+            "model_dir": lid_cfg.get("model_dir", "pretrained_models/FireRedLID"),
+            "use_gpu": lid_cfg.get("use_gpu", True),
+            "use_half": lid_cfg.get("use_half", False),
+        },
+        "punc": {
+            "enabled": punc_cfg.get("enabled", True),
+            "model_dir": punc_cfg.get("model_dir", "pretrained_models/FireRedPunc"),
+            "use_gpu": punc_cfg.get("use_gpu", True),
+        },
+    }
+
+
+def summarize_asr_system_config(config: "FireRedAsr2SystemConfig") -> Dict[str, Any]:
+    """提取 FireRedAsr2SystemConfig 的关键信息用于日志。"""
+    return {
+        "asr_type": config.asr_type,
+        "asr_model_dir": config.asr_model_dir,
+        "vad_model_dir": config.vad_model_dir,
+        "lid_model_dir": config.lid_model_dir,
+        "punc_model_dir": config.punc_model_dir,
+        "enable_vad": config.enable_vad,
+        "enable_lid": config.enable_lid,
+        "enable_punc": config.enable_punc,
+        "asr_use_gpu": config.asr_config.use_gpu,
+        "asr_use_half": config.asr_config.use_half,
+        "asr_beam_size": config.asr_config.beam_size,
+        "vad_use_gpu": config.vad_config.use_gpu,
+        "lid_use_gpu": config.lid_config.use_gpu,
+        "lid_use_half": config.lid_config.use_half,
+        "punc_use_gpu": config.punc_config.use_gpu,
+    }
 
 
 def build_asr_system_config(models_config: Dict[str, Any]) -> "FireRedAsr2SystemConfig":
@@ -91,8 +148,9 @@ def create_asr_system(models_config: Dict[str, Any]) -> "FireRedAsr2System":
     """从 config 创建 FireRedAsr2System 实例"""
     from fireredasr2s.fireredasr2system import FireRedAsr2System
 
+    logger.info("收到模型配置，开始构建 FireRedAsr2System: %s", summarize_models_config(models_config))
     config = build_asr_system_config(models_config)
-    logger.info("正在创建 FireRedAsr2System...")
+    logger.info("正在创建 FireRedAsr2System，构建后的配置摘要: %s", summarize_asr_system_config(config))
     system = FireRedAsr2System(config)
     logger.info("FireRedAsr2System 创建完成")
     return system

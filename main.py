@@ -31,7 +31,7 @@ from api.modules.punc import router as punc_router
 
 # 导入核心模块
 from core.model_manager import ModelManager
-from core.asr_system_factory import create_asr_system
+from core.asr_system_factory import create_asr_system, summarize_models_config
 from utils.config_loader import load_config
 from utils.logger import setup_logger
 
@@ -57,6 +57,7 @@ async def startup_event():
     config = load_config("config.yaml")
     logger.info("Configuration loaded")
     models_config = config.get("models", {})
+    logger.info("Models configuration summary: %s", summarize_models_config(models_config))
 
     # 1. 先创建 FireRedAsr2System（当 asr.enabled 时）
     if models_config.get("asr", {}).get("enabled", False):
@@ -65,7 +66,13 @@ async def startup_event():
             app.state.asr_system = asr_system
             logger.info("FireRedAsr2System 已加载")
         except Exception as e:
-            logger.error(f"FireRedAsr2System 加载失败: {e}")
+            logger.exception(
+                "FireRedAsr2System 加载失败，模型相关接口将不可用。"
+                " exception_type=%s, exception=%r, models_config=%s",
+                type(e).__name__,
+                e,
+                summarize_models_config(models_config),
+            )
             asr_system = None
             app.state.asr_system = None
     else:
